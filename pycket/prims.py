@@ -139,7 +139,8 @@ for args in [
 val("null", cons.w_null)
 val("true", values.w_true)
 val("false", values.w_false)
-val("void", values.w_void)
+@expose("void")
+def do_void(args): return values.w_void
 
 def equal_loop(a,b):
     if a is b:
@@ -152,8 +153,11 @@ def equal_loop(a,b):
         return False
     if isinstance(a, values.W_Symbol): 
         return False
-    if isinstance(a, cons.W_Cons) and isinstance(b, cons.W_Cons):
-        return equal_loop(a.car, b.car) and equal_loop(a.cdr, b.cdr)
+    if isinstance(a, cons.W_FixnumArrayCons) and isinstance(b, cons.W_FixnumArrayCons):
+        return a.arr is b.arr and a.offset == b.offset
+    if isinstance(a, cons.W_AbstractCons) and isinstance(b, cons.W_AbstractCons):
+        # We could add specialized versions for different subclasses here, but I hope the JIT will handle that.
+        return equal_loop(a.get_car(), b.get_car()) and equal_loop(a.get_cdr(), b.get_cdr())
     if isinstance(a, vec.W_Vector) and isinstance(b, vec.W_Vector):
         if a.length() != b.length(): return False
         for i in range(a.length()):
