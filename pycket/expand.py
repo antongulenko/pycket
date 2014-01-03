@@ -7,6 +7,7 @@ import pycket.json as pycket_json
 from pycket.interpreter import *
 from pycket import values
 from pycket import vector
+from pycket import cons
 
 
 #### ========================== Utility functions
@@ -207,10 +208,10 @@ def to_value(json):
             return values.W_String(str(obj["string"].value_string))
         if "improper" in obj:
             improper = obj["improper"].value_array
-            return values.to_improper([to_value(v) for v in improper[0].value_array], to_value(improper[1]))
+            return cons.to_improper([to_value(v) for v in improper[0].value_array], to_value(improper[1]))
         for i in ["toplevel", "lexical", "module"]:
             if i in obj:
                 return values.W_Symbol.make(obj[i].value_string)
     if json.is_array:
-        return values.to_list([to_value(j) for j in json.value_array])
+        return cons.to_list([to_value(j) for j in json.value_array])
     assert 0, "Unexpected json value: %s" % json.tostring()

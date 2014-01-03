@@ -1,7 +1,8 @@
 from pycket        import values
 from pycket        import vector
+from pycket        import proc
 from pycket.prims  import prim_env
-from pycket.error import SchemeException
+from pycket.error  import SchemeException
 from rpython.rlib  import jit, debug
 
 
@@ -526,7 +527,7 @@ class RecLambda(AST):
         e = ConsEnv.make([values.w_void], SymList([self.name]), env, env.toplevel_env)
         Vcl, e, f = self.lam.interpret(e, frame)
         cl = Vcl.w_val
-        assert isinstance(cl, values.W_Closure)
+        assert isinstance(cl, proc.W_Closure)
         cl.env.set(self.name, cl)
         return Vcl, env, frame
     def tostring(self):
@@ -549,7 +550,7 @@ class Lambda(SequencedBodyAST):
         self.args = SymList(formals + ([rest] if rest else []))
         self.frees = SymList(self.free_vars().keys())
     def interpret(self, env, frame):
-        return Value(values.W_Closure(self, env)), env, frame
+        return Value(proc.W_Closure(self, env)), env, frame
     def assign_convert(self, vars):
         local_muts = {}
         for b in self.body:

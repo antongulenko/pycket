@@ -3,6 +3,8 @@ import os
 from pycket.expand import expand, to_ast
 from pycket.interpreter import *
 from pycket.values import *
+from pycket.cons import *
+from pycket.proc import *
 from pycket.prims import *
 
 stdlib_fn = os.path.join(os.path.dirname(os.path.dirname(__file__)), "stdlib.sch")

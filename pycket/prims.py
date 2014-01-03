@@ -1,7 +1,10 @@
 import operator
 import os
 from pycket import values
+from pycket import proc
+from pycket import cons
 from pycket import vector as values_vector
+from pycket import cons
 from pycket import arithmetic # imported for side effect
 from pycket.error import SchemeException
 from rpython.rlib  import jit, unroll
@@ -38,9 +41,9 @@ def expose(name, argstypes=None, simple=True):
                 return result
         wrap_func.func_name = "wrap_%s" % (func.func_name, )
         if simple:
-            cls = values.W_SimplePrim
+            cls = proc.W_SimplePrim
         else:
-            cls = values.W_Prim
+            cls = proc.W_Prim
         prim_env[values.W_Symbol.make(name)] = cls(name, wrap_func)
         return wrap_func
     return wrapper
@@ -82,20 +85,20 @@ def make_pred_eq(name, val):
 
 
 for args in [
-        ("pair?", values.W_Cons),
+        ("pair?", cons.W_Cons),
         ("number?", values.W_Number),
         ("vector?", values_vector.W_Vector),
         ("string?", values.W_String),
         ("symbol?", values.W_Symbol),
         ("boolean?", values.W_Bool),
-        ("procedure?", values.W_Procedure),
+        ("procedure?", proc.W_Procedure),
         ]:
     make_pred(*args)
 
 for args in [
         ("void?", values.w_void),
         ("false?", values.w_false),
-        ("null?", values.w_null),
+        ("null?", cons.w_null),
         ]:
     make_pred_eq(*args)
 
@@ -133,7 +136,7 @@ for args in [
         ]:
     make_unary_arith(*args)
 
-val("null", values.w_null)
+val("null", cons.w_null)
 val("true", values.w_true)
 val("false", values.w_false)
 
@@ -144,11 +147,11 @@ def equal_loop(a,b):
         return a.value == b.value
     if a is values.w_void:
         return False
-    if a is values.w_null:
+    if a is cons.w_null:
         return False
     if isinstance(a, values.W_Symbol): 
         return False
-    if isinstance(a, values.W_Cons) and isinstance(b, values.W_Cons):
+    if isinstance(a, cons.W_Cons) and isinstance(b, cons.W_Cons):
         return equal_loop(a.car, b.car) and equal_loop(a.cdr, b.cdr)
     if isinstance(a, values_vector.W_Vector) and isinstance(b, values_vector.W_Vector):
         if a.length() != b.length(): return False
@@ -158,9 +161,9 @@ def equal_loop(a,b):
         return True
     return False
 
-@expose("call/cc", [values.W_Procedure], simple=False)
+@expose("call/cc", [proc.W_Procedure], simple=False)
 def callcc(a, env, frame):
-    return a.call([values.W_Continuation(frame)], env, frame)
+    return a.call([proc.W_Continuation(frame)], env, frame)
 
 @expose("equal?", [values.W_Object] * 2)
 def equalp(a, b):
@@ -177,13 +180,13 @@ def eqp(a, b):
     else:
         return values.w_false
 
-@expose("length", [values.W_List])
+@expose("length", [cons.W_List])
 def length(a):
     n = 0
     while True:
-        if isinstance(a, values.W_Null):
+        if isinstance(a, cons.W_Null):
             return values.W_Fixnum(n)
-        if isinstance(a, values.W_Cons):
+        if isinstance(a, cons.W_Cons):
             a = a.cdr
             n = n+1
         else:
@@ -192,18 +195,18 @@ def length(a):
 
 @expose("list")
 def do_list(args):
-    return values.to_list(args)
+    return cons.to_list(args)
 
 @expose("list*")
 def do_liststar(args):
     a = len(args)-1
     if a < 0:
         raise SchemeException("list* expects at least one argument")
-    return values.to_improper(args[:a], args[a])
+    return cons.to_improper(args[:a], args[a])
 
 @expose("assq", [values.W_Object] * 2)
 def assq(a, b):
-    if values.w_null is b:
+    if cons.w_null is b:
         return values.w_false
     else:
         if eqp([a, do_car([do_car([b])])]):
@@ -214,9 +217,9 @@ def assq(a, b):
 
 @expose("cons", [values.W_Object, values.W_Object])
 def do_cons(a, b):
-    return values.W_Cons(a,b)
+    return cons.W_Cons(a,b)
 
-@expose("car", [values.W_Cons])
+@expose("car", [cons.W_Cons])
 def do_car(a):
     return a.car
 
@@ -236,15 +239,15 @@ def do_caddr(args):
 def do_cadddr(args):
     return do_car([do_cdr([do_cdr([do_cdr(args)])])])
 
-@expose("cdr", [values.W_Cons])
+@expose("cdr", [cons.W_Cons])
 def do_cdr(a):
     return a.cdr
 
-@expose("set-car!", [values.W_Cons, values.W_Object])
+@expose("set-car!", [cons.W_Cons, values.W_Object])
 def do_set_car(a, b):
     a.car = b
 
-@expose("set-cdr!", [values.W_Cons, values.W_Object])
+@expose("set-cdr!", [cons.W_Cons, values.W_Object])
 def do_set_cdr(a, b):
     a.cdr = b
 
@@ -300,8 +303,8 @@ def vector_length(v):
 # my kingdom for a tail call
 def listp_loop(v):
     while True:
-        if v is values.w_null: return True
-        if isinstance(v, values.W_Cons):
+        if v is cons.w_null: return True
+        if isinstance(v, cons.W_Cons):
             v = v.cdr
             continue
         return False
