@@ -18,7 +18,6 @@ class W_SimplePrim(W_Procedure):
     def call(self, args, env, frame):
         from pycket.interpreter import Value
         jit.promote(self)
-        #print self.name
         return Value(self.code(args)), env, frame
     
     def tostring(self):

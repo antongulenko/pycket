@@ -16,7 +16,7 @@ class W_Cons(W_List):
 
 class W_Null(W_List):
     def __init__(self): pass
-    def tostring(self): return "()"
+    def tostring(self): return "'()"
 
 w_null = W_Null()
 
