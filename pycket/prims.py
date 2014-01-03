@@ -3,7 +3,7 @@ import os
 from pycket import values
 from pycket import proc
 from pycket import cons
-from pycket import vector as values_vector
+from pycket import vector as vec
 from pycket import cons
 from pycket import arithmetic # imported for side effect
 from pycket.error import SchemeException
@@ -87,7 +87,7 @@ def make_pred_eq(name, val):
 for args in [
         ("pair?", cons.W_Cons),
         ("number?", values.W_Number),
-        ("vector?", values_vector.W_Vector),
+        ("vector?", vec.W_Vector),
         ("string?", values.W_String),
         ("symbol?", values.W_Symbol),
         ("boolean?", values.W_Bool),
@@ -153,7 +153,7 @@ def equal_loop(a,b):
         return False
     if isinstance(a, cons.W_Cons) and isinstance(b, cons.W_Cons):
         return equal_loop(a.car, b.car) and equal_loop(a.cdr, b.cdr)
-    if isinstance(a, values_vector.W_Vector) and isinstance(b, values_vector.W_Vector):
+    if isinstance(a, vec.W_Vector) and isinstance(b, vec.W_Vector):
         if a.length() != b.length(): return False
         for i in range(a.length()):
             if not equal_loop(a.ref(i), b.ref(i)):
@@ -261,7 +261,7 @@ def num2str(a):
 @expose("vector-ref")
 def vector_ref(args):
     v, i = args
-    if not isinstance(v, values_vector.W_Vector):
+    if not isinstance(v, vec.W_Vector):
         raise SchemeException("vector-ref: expected a vector")
     if not isinstance(i, values.W_Fixnum):
         raise SchemeException("vector-ref: expected a fixnum")
@@ -270,7 +270,7 @@ def vector_ref(args):
         raise SchemeException("vector-ref: index out of bounds")
     return v.ref(i.value)
 
-@expose("vector-set!", [values_vector.W_Vector, values.W_Fixnum, values.W_Object])
+@expose("vector-set!", [vec.W_Vector, values.W_Fixnum, values.W_Object])
 def vector_set(v, i, new):
     idx = i.value
     if not (0 <= idx < v.length()):
@@ -279,7 +279,7 @@ def vector_set(v, i, new):
 
 @expose("vector")
 def vector(args):
-    return values_vector.W_Vector.fromelements(args)
+    return vec.W_Vector.fromelements(args)
 
 @expose("make-vector")
 def make_vector(args):
@@ -294,9 +294,9 @@ def make_vector(args):
         raise SchemeException("make-vector: expected a fixnum")
     if not (n.value >= 0):
         raise SchemeException("make-vector: expected a positive fixnum")
-    return values_vector.W_Vector.fromelement(val, n.value)
+    return vec.W_Vector.fromelement(val, n.value)
 
-@expose("vector-length", [values_vector.W_Vector])
+@expose("vector-length", [vec.W_Vector])
 def vector_length(v):
     return values.W_Fixnum(v.length())
 
