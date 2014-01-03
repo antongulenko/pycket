@@ -139,6 +139,7 @@ for args in [
 val("null", cons.w_null)
 val("true", values.w_true)
 val("false", values.w_false)
+val("void", values.w_void)
 
 def equal_loop(a,b):
     if a is b:
@@ -161,10 +162,6 @@ def equal_loop(a,b):
         return True
     return False
 
-@expose("call/cc", [proc.W_Procedure], simple=False)
-def callcc(a, env, frame):
-    return a.call([proc.W_Continuation(frame)], env, frame)
-
 @expose("equal?", [values.W_Object] * 2)
 def equalp(a, b):
     # this doesn't work for cycles
@@ -180,6 +177,9 @@ def eqp(a, b):
     else:
         return values.w_false
 
+
+# ------------------------- List ------------------------
+
 @expose("length", [cons.W_List])
 def length(a):
     n = 0
@@ -192,6 +192,18 @@ def length(a):
         else:
             raise SchemeException("length: not a list")
         
+# my kingdom for a tail call
+def listp_loop(v):
+    while True:
+        if v is cons.w_null: return True
+        if isinstance(v, cons.W_Cons):
+            v = v.cdr
+            continue
+        return False
+
+@expose("list?", [values.W_Object])
+def consp(v):
+    return values.W_Bool.make(listp_loop(v))
 
 @expose("list")
 def do_list(args):
@@ -251,12 +263,7 @@ def do_set_car(a, b):
 def do_set_cdr(a, b):
     a.cdr = b
 
-@expose("void")
-def do_void(args): return values.w_void
-
-@expose("number->string", [values.W_Number])
-def num2str(a):
-    return values.W_String(a.tostring())
+# ------------------------- Vector ------------------------
 
 @expose("vector-ref")
 def vector_ref(args):
@@ -300,19 +307,16 @@ def make_vector(args):
 def vector_length(v):
     return values.W_Fixnum(v.length())
 
-# my kingdom for a tail call
-def listp_loop(v):
-    while True:
-        if v is cons.w_null: return True
-        if isinstance(v, cons.W_Cons):
-            v = v.cdr
-            continue
-        return False
 
-@expose("list?", [values.W_Object])
-def consp(v):
-    return values.W_Bool.make(listp_loop(v))
+# ------------------------- Other ------------------------
 
+@expose("number->string", [values.W_Number])
+def num2str(a):
+    return values.W_String(a.tostring())
+
+@expose("call/cc", [proc.W_Procedure], simple=False)
+def callcc(a, env, frame):
+    return a.call([proc.W_Continuation(frame)], env, frame)
 
 @expose("display", [values.W_Object])
 def display(s):
