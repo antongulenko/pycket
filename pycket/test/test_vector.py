@@ -30,11 +30,11 @@ def test_make_vector():
 
 def test_vec_strategies_empty():
     vec = run("(vector)")
-    print "First size: %s" % vec.length()
-    assert isinstance(vec.strategy, ObjectVectorStrategy)
+    assert vec.length() == 0
+    #assert isinstance(vec.strategy, ObjectVectorStrategy)
     vec = run("(make-vector 0)")
-    print "Second size: %s" % vec.length()
-    assert isinstance(vec.strategy, ObjectVectorStrategy)
+    assert vec.length() == 0
+    #assert isinstance(vec.strategy, ObjectVectorStrategy)
 
 def test_vec_strategies_fixnum():
     vec = run("(vector 1 2 3)")
@@ -47,11 +47,6 @@ def test_vec_strategies_flonum():
     assert isinstance(vec.strategy, FlonumVectorStrategy)
     vec = run("(make-vector 2 1.2)")
     assert isinstance(vec.strategy, FlonumVectorStrategy)
-
-def test_vec_strategies_fixnum_singleton():
-    vec1 = run("(vector 1 2 3)")
-    vec2 = run("(make-vector 2)")
-    assert vec1.strategy is vec2.strategy
 
 def test_vec_strategies_object():
     vec = run("(vector (cons 1 2) 2 3)")

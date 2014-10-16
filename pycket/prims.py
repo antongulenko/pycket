@@ -1666,7 +1666,7 @@ def list2vector(l):
 @expose("vector->list", [values_vector.W_Vector])
 def vector2list(v):
     es = []
-    for i in range(v.len):
+    for i in range(v.length()):
         es.append(v.ref(i))
     return values.to_list(es)
 

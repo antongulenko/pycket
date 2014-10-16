@@ -3,7 +3,7 @@ from pycket.cont import label
 from pycket.values import W_MVector, W_Object, W_Fixnum, W_Flonum, W_Null, UNROLLING_CUTOFF
 from rpython.rlib.objectmodel import import_from_mixin
 from rpython.rlib import jit
-from pycket import rstrategies as rstrat
+import rstrategies as rstrat
 
 class AbstractStrategy(object):
     __metaclass__ = rstrat.StrategyMetaclass
@@ -53,7 +53,7 @@ class StrategyFactory(rstrat.StrategyFactory):
     
     def __init__(self):
         super(StrategyFactory, self).__init__(AbstractStrategy)
-        self.no_specialized = [True]
+        self.no_specialized = [False]
     
     def strategy_for_elems(self, elems):
         if self.no_specialized[0]:
