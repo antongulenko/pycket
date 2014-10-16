@@ -41,6 +41,8 @@ def print_help(argv):
  Configuration options:
   --stdlib: Use Pycket's version of stdlib (only applicable for -e)
  Meta options:
+  -S : Disable specialized vector storage strategies.
+  --log or --log-trace : Log storage strategy operations
   --jit <jitargs> : Set RPython JIT options may be 'default', 'off',
                     or 'param=value,param=value' list
   -- : No argument following this switch is used as a switch
@@ -83,7 +85,15 @@ def parse_args(argv):
             break
         elif argv[i] == "--stdlib":
             config['stdlib'] = True
-            i += 1
+        elif argv[i] == "--log":
+            from pycket.vector import _factory
+            _factory.logger.activate(aggregate=True)
+        elif argv[i] == "--log-trace":
+            from pycket.vector import _factory
+            _factory.logger.activate(aggregate=False)
+        elif argv[i] == "-S":
+            from pycket.vector import _factory
+            _factory.no_specialized[0] = True
         elif argv[i] == "-e":
             if to <= i + 1:
                 print "missing argument after -e"

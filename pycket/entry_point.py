@@ -17,6 +17,9 @@ def entry_point(argv):
     except SchemeException, e:
         print "ERROR:", e.msg
         raise # to see interpreter-level traceback
+    finally:
+        from pycket.vector import _factory
+        _factory.logger.print_aggregated_log()
 
 def actual_entry(argv):
     jit.set_param(None, "trace_limit", 20000)
